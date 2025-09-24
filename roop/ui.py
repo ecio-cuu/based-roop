@@ -1,7 +1,7 @@
 import os
 import webbrowser
 import customtkinter as ctk
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Optional
 import cv2
 from PIL import Image, ImageOps
 
@@ -183,7 +183,7 @@ def render_image_preview(image_path: str, size: Tuple[int, int]) -> ctk.CTkImage
     return ctk.CTkImage(image, size=image.size)
 
 
-def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: int = 0) -> ctk.CTkImage | None:
+def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: int = 0) -> Optional[ctk.CTkImage]:
     capture = cv2.VideoCapture(video_path)
     if frame_number:
         capture.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
