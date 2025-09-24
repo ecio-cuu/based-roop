@@ -205,3 +205,4 @@ def run() -> None:
     else:
         window = ui.init(start, destroy)
         window.mainloop()
+        
