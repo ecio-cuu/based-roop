@@ -185,7 +185,7 @@ def render_image_preview(image_path: str, size: Tuple[int, int]) -> ctk.CTkImage
     return ctk.CTkImage(image, size=image.size)
 
 
-def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: int = 0) -> ctk.CTkImage:
+def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: int = 0) -> ctk.CTkImage | None:
     capture = cv2.VideoCapture(video_path)
     if frame_number:
         capture.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
@@ -194,9 +194,11 @@ def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: i
         image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if size:
             image = ImageOps.fit(image, size, Image.LANCZOS)
+        capture.release()
         return ctk.CTkImage(image, size=image.size)
     capture.release()
     cv2.destroyAllWindows()
+    return None
 
 
 def toggle_preview() -> None:
@@ -232,50 +234,48 @@ def update_preview(frame_number: int = 0) -> None:
         image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
         image = ctk.CTkImage(image, size=image.size)
         preview_label.configure(image=image)
-        
 
-def webcam_preview():
+
+def webcam_preview() -> None:
+    # Si no hay imagen de origen seleccionada, salir.
     if roop.globals.source_path is None:
-        # No image selected
         return
-    
-    global preview_label, PREVIEW
 
-    cap = cv2.VideoCapture(0)  # Use index for the webcam (adjust the index accordingly if necessary)    
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)  # Set the width of the resolution
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)  # Set the height of the resolution
-    cap.set(cv2.CAP_PROP_FPS, 30)  # Set the frame rate of the webcam
-    PREVIEW_MAX_HEIGHT = 960
-    PREVIEW_MAX_WIDTH = 540
+    cap = cv2.VideoCapture(0)  # Índice de la webcam
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
+    cap.set(cv2.CAP_PROP_FPS, 30)
 
-    preview_label.configure(image=None)  # Reset the preview image before startup
+    # Usa variables locales (no reasignar las constantes en MAYÚSCULAS)
+    preview_max_height = 960
+    preview_max_width = 540
 
-    PREVIEW.deiconify()  # Open preview window
+    preview_label.configure(image=None)  # Reset del preview antes de iniciar
+    PREVIEW.deiconify()  # Abrir ventana de preview
 
     frame_processors = get_frame_processors_modules(roop.globals.frame_processors)
-
-    source_image = None  # Initialize variable for the selected face image
+    source_image = None  # Imagen de rostro seleccionada
 
     while True:
         ret, frame = cap.read()
         if not ret:
             break
 
-        # Select and save face image only once
+        # Seleccionar y guardar el rostro una sola vez
         if source_image is None and roop.globals.source_path:
             source_image = get_one_face(cv2.imread(roop.globals.source_path))
 
-        temp_frame = frame.copy()  #Create a copy of the frame
+        temp_frame = frame.copy()
 
         for frame_processor in frame_processors:
             temp_frame = frame_processor.process_frame(source_image, temp_frame)
 
-        image = cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB)  # Convert the image to RGB format to display it with Tkinter
+        image = cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(image)
-        image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
+        image = ImageOps.contain(image, (preview_max_width, preview_max_height), Image.LANCZOS)
         image = ctk.CTkImage(image, size=image.size)
         preview_label.configure(image=image)
         ROOT.update()
 
     cap.release()
-    PREVIEW.withdraw()  # Close preview window when loop is finished
+    PREVIEW.withdraw()  # Cerrar preview al terminar
