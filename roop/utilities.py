@@ -7,7 +7,7 @@ import ssl
 import subprocess
 import urllib
 from pathlib import Path
-from typing import List, Any, Callable
+from typing import List, Any
 from ssl import SSLContext
 from tqdm import tqdm
 
