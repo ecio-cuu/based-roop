@@ -13,8 +13,6 @@ from roop.predicter import predict_frame
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import is_image, is_video, resolve_relative_path
 
-import cv2
-
 ROOT = None
 ROOT_HEIGHT = 700
 ROOT_WIDTH = 600
