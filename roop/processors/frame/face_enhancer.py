@@ -56,7 +56,7 @@ def enhance_face(temp_frame: Frame) -> Frame:
 
 
 def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
-    if target_face := get_one_face(temp_frame):
+    _ := get_one_face(temp_frame):
         temp_frame = enhance_face(temp_frame)
     return temp_frame
 
