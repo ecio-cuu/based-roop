@@ -20,7 +20,7 @@ torchvision==0.19.1+cu118; sys_platform != 'darwin'
 # ONNX Runtime GPU (versiones vigentes)
 onnxruntime-gpu==1.20.1; sys_platform != 'darwin'
 
-# Otros
+# Otross
 tensorflow==2.18.0; sys_platform != 'darwin'
 opennsfw2==0.10.2
 protobuf==4.23.2
