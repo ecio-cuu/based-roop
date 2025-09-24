@@ -34,10 +34,8 @@ status_label = None
 
 def init(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
     global ROOT, PREVIEW
-
     ROOT = create_root(start, destroy)
     PREVIEW = create_preview(ROOT)
-
     return ROOT
 
 
@@ -105,7 +103,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     return root
 
 
-def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
+def create_preview(parent: ctk.CTk) -> ctk.CTkToplevel:
     global preview_label, preview_slider
 
     preview = ctk.CTkToplevel(parent)
@@ -221,19 +219,28 @@ def init_preview() -> None:
 
 
 def update_preview(frame_number: int = 0) -> None:
-    if roop.globals.source_path and roop.globals.target_path:
-        temp_frame = get_video_frame(roop.globals.target_path, frame_number)
-        if predict_frame(temp_frame):
-            quit()
-        for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-            temp_frame = frame_processor.process_frame(
-                get_one_face(cv2.imread(roop.globals.source_path)),
-                temp_frame
-            )
-        image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
-        image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
-        image = ctk.CTkImage(image, size=image.size)
-        preview_label.configure(image=image)
+    if not (roop.globals.source_path and roop.globals.target_path):
+        return
+
+    # Cargar imagen o frame de video según corresponda
+    if is_image(roop.globals.target_path):
+        temp_frame = cv2.imread(roop.globals.target_path)
+    else:
+        temp_frame = get_video_frame(roop.globals.target_path, int(frame_number))
+
+    if predict_frame(temp_frame):
+        quit()
+
+    for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
+        temp_frame = frame_processor.process_frame(
+            get_one_face(cv2.imread(roop.globals.source_path)),
+            temp_frame
+        )
+
+    image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
+    image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
+    image = ctk.CTkImage(image, size=image.size)
+    preview_label.configure(image=image)
 
 
 def webcam_preview() -> None:
