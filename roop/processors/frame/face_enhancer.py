@@ -18,12 +18,11 @@ NAME = 'ROOP.FACE-ENHANCER'
 
 def get_face_enhancer() -> Any:
     global FACE_ENHANCER
-
     with THREAD_LOCK:
         if FACE_ENHANCER is None:
             model_path = resolve_relative_path('../models/GFPGANv1.4.pth')
             # todo: set models path https://github.com/TencentARC/GFPGAN/issues/399
-            FACE_ENHANCER = gfpgan.GFPGANer(model_path=model_path, upscale=1) # type: ignore[attr-defined]
+            FACE_ENHANCER = gfpgan.GFPGANer(model_path=model_path, upscale=1)  # type: ignore[attr-defined]
     return FACE_ENHANCER
 
 
@@ -42,7 +41,6 @@ def pre_start() -> bool:
 
 def post_process() -> None:
     global FACE_ENHANCER
-
     FACE_ENHANCER = None
 
 
@@ -56,7 +54,9 @@ def enhance_face(temp_frame: Frame) -> Frame:
 
 
 def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
-    _ := get_one_face(temp_frame):
+    # Detect one face; if found, enhance. Using the variable avoids F841.
+    target_face = get_one_face(temp_frame)
+    if target_face is not None:
         temp_frame = enhance_face(temp_frame)
     return temp_frame
 
